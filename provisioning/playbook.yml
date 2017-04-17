@@ -99,7 +99,8 @@
     - { role: geerlingguy.redis, when: '"redis" in installed_extras' }
     - { role: geerlingguy.php-redis, when: '"redis" in installed_extras' }
     - { role: geerlingguy.ruby, when: '"ruby" in installed_extras' }
-
+    - { role: hashbangcode.pantheon-cli, when: '"pantheon-cli" in installed_extras' }
+    
     - role: geerlingguy.java
       when: >
         "java" in installed_extras or
