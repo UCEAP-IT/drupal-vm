@@ -1,4 +1,9 @@
 ---
+# If you need to run multiple instances of Drupal VM, set a unique hostname,
+# machine name, and IP address for each instance.
+vagrant_hostname: myeap.dev
+vagrant_machine_name: myeapvm
+vagrant_ip: 192.168.88.88
 # A list of synced folders, with the keys 'local_path', 'destination', and
 # a 'type' of [nfs|rsync|smb] (leave empty for slow native shares). See
 # http://docs.drupalvm.com/en/latest/getting-started/syncing-folders/ for more.
@@ -6,8 +11,8 @@ vagrant_synced_folders:
   # The first synced folder will be used for the default Drupal installation, if
   # any of the build_* settings are 'true'. By default the folder is set to
   # the drupal-vm folder.
-  - local_path: .
-    destination: /var/www/drupalvm
+  - local_path: ../Sites/myeap
+    destination: /var/www/myeap
     type: nfs
     create: true
     mount_options: ["rw", "vers=3", "tcp", "fsc"]
@@ -32,26 +37,26 @@ drush_make_options: "--no-gitinfofile"
 # composer based site deployment strategy.
 drupal_build_composer: false
 drupal_composer_path: "{{ config_dir }}/drupal.composer.json"
-drupal_composer_install_dir: "/var/www/drupalvm/drupal"
+drupal_composer_install_dir: "/var/www/myeap"
 drupal_composer_dependencies:
   - "drupal/devel:1.x-dev"
 
 # Set this to 'true' and 'build_makefile', 'build_composer' to 'false' if you
 # are using Composer's create-project as a site deployment strategy.
-drupal_build_composer_project: true
+drupal_build_composer_project: false
 drupal_composer_project_package: "drupal-composer/drupal-project:8.x-dev"
 drupal_composer_project_options: "--prefer-dist --stability dev --no-interaction"
 
 # Set this to 'false' if you don't need to install drupal (using the drupal_*
 # settings below), but instead copy down a database (e.g. using drush sql-sync).
-drupal_install_site: true
+drupal_install_site: false
 
 # Required Drupal settings.
 drupal_core_path: "{{ drupal_composer_install_dir }}/web"
 drupal_core_owner: "{{ drupalvm_user }}"
-drupal_db_user: drupal
-drupal_db_password: drupal
-drupal_db_name: drupal
+drupal_db_user: myeap_dev
+drupal_db_password: myeap_dev
+drupal_db_name: myeap_dev
 
 # Settings for installing a Drupal site if 'install_site:' is 'true'.
 drupal_major_version: 8
@@ -82,7 +87,6 @@ installed_extras:
   - redis
   # - ruby
   - selenium
-  - pantheon-cli
   - solr
   # - tideways
   # - upload-progress
@@ -97,6 +101,7 @@ extra_packages:
   - unzip
   - graphicsmagick
   - graphicsmagick-imagemagick-compat
+  - parallel
 
 # You can configure almost anything else on the server in the rest of this file.
 extra_security_enabled: false
@@ -144,6 +149,25 @@ php_assert_active: 0
 php_enable_php_fpm: true
 php_fpm_listen: "127.0.0.1:9000"
 
+# set php packages used by `ansible-role-php` with the removal of `php-pecl-yaml`
+# for yaml compatiblity.
+php_packages:
+  - "php{{ php_version }}"
+  - "php{{ php_version }}-apcu"
+  - "php{{ php_version }}-cli"
+  - "php{{ php_version }}-common"
+  - "php{{ php_version }}-curl"
+  - "php{{ php_version }}-dev"
+  - "php{{ php_version }}-fpm"
+  - "php{{ php_version }}-gd"
+  - "php{{ php_version }}-imap"
+  - "php{{ php_version }}-json"
+  - "php{{ php_version }}-mbstring"
+  - "php{{ php_version }}-mcrypt"
+  - "php{{ php_version }}-opcache"
+  - "php{{ php_version }}-sqlite3"
+  - "php{{ php_version }}-xml"
+
 composer_path: /usr/bin/composer
 composer_home_path: "/home/{{ drupalvm_user }}/.composer"
 composer_home_owner: "{{ drupalvm_user }}"
@@ -151,6 +175,7 @@ composer_home_group: "{{ drupalvm_user }}"
 composer_global_packages:
   - { name: hirak/prestissimo, release: '^0.3' }
   - { name: drupal/drupal-extension, release: '*' }
+  - { name: pantheon-systems/terminus, release: '*' }
 
 # Run specified scripts before or after VM is provisioned. Path is relative to
 # the `provisioning/playbook.yml` file.
