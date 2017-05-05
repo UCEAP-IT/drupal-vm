@@ -14,6 +14,7 @@
 .vagrant/
 vagrant_ansible_inventory_default
 
+
 # Drupal VM specific files.
 local.config.yml
 config.yml
@@ -22,8 +23,11 @@ drupal.make.yml
 Vagrantfile.local
 examples/prod/inventory
 examples/prod/bootstrap/vars.yml
-scripts/
+scripts/*
 drupal/
 
 # Some roles include 'config.yml' files.
 !provisioning/roles/**/config.yml
+
+# need examples/scripts to be shared to other Devs
+!/examples/scripts/*
