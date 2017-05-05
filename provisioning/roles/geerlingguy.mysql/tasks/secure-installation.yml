@@ -58,7 +58,7 @@
 - name: Update mariadb root password method for localhost root account (5.7.x).
   shell: >
     mysql -u root -NBe
-    'update mysql.user set plugin=' where User='"{{ mysql_root_username }};flush privileges;'
+    'update mysql.user set plugin="" where User="{{ mysql_root_username }}"; flush privileges;'
   with_items: "{{ mysql_root_hosts.stdout_lines|default([]) }}"
   when: ((mysql_install_packages | bool) or mysql_root_password_update) and ('10.' in mysql_cli_version.stdout)
 
