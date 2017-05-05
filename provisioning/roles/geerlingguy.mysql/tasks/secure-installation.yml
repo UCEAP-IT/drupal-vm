@@ -53,6 +53,15 @@
   with_items: "{{ mysql_root_hosts.stdout_lines|default([]) }}"
   when: ((mysql_install_packages | bool) or mysql_root_password_update) and ('5.7.' not in mysql_cli_version.stdout)
 
+# Note: mariadb 10.x defaults auth_socket.so for root Authenication
+# We want normal user/password @ host authenication to allow connections elsewhere.
+- name: Update mariadb root password method for localhost root account (5.7.x).
+  shell: >
+    mysql -u root -NBe
+    'update mysql.user set plugin=' where User='"{{ mysql_root_username }};flush privileges;'
+  with_items: "{{ mysql_root_hosts.stdout_lines|default([]) }}"
+  when: ((mysql_install_packages | bool) or mysql_root_password_update) and ('10.' in mysql_cli_version.stdout)
+
 # Has to be after the root password assignment, for idempotency.
 - name: Copy .my.cnf file with root password credentials.
   template:
