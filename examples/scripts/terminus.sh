@@ -22,19 +22,18 @@ if [ ! -e $TERMINUS_COMPOSER_COMMAND ]; then
   # Download and install terminus in composer global for current user.
   # add  '--install-version=$TERMINUS_VERSION' if you want to install a specific
   # terminus version.
-  curl -O $TERMINUS_DOWNLOAD && php installer.phar install  --install-dir=$TERMINUS_DOWNLOAD_DIR --bin-dir=$TERMINUS_COMPOSER_BIN_PATH
+  sudo su -c "curl -O $TERMINUS_DOWNLOAD && php installer.phar install  --install-dir=$TERMINUS_DOWNLOAD_DIR --bin-dir=$TERMINUS_COMPOSER_BIN_PATH" $VAGRANT_USER
 fi
 
 # Install terminus helper plugins for workflow
 if [ ! -e $TERMINUS_PLUGIN_PATH ]; then
-  mkdir -p $TERMINUS_PLUGIN_PATH
+  sudo su -c "mkdir -p $TERMINUS_PLUGIN_PATH" $VAGRANT_USER
   pushd $TERMINUS_PLUGIN_PATH
-  git clone https://github.com/pantheon-systems/terminus-drupal-console-plugin.git
-  git clone https://github.com/pantheon-systems/terminus-build-tools-plugin.git
-  git clone https://github.com/pantheon-systems/terminus-composer-plugin.git
-  git clone https://github.com/pantheon-systems/terminus-quicksilver-plugin.git
+  sudo su -c "git clone https://github.com/pantheon-systems/terminus-drupal-console-plugin.git" $VAGRANT_USER
+  sudo su -c "git clone https://github.com/pantheon-systems/terminus-build-tools-plugin.git" $VAGRANT_USER
+  sudo su -c "git clone https://github.com/pantheon-systems/terminus-composer-plugin.git" $VAGRANT_USER
+  sudo su -c "git clone https://github.com/pantheon-systems/terminus-quicksilver-plugin.git" $VAGRANT_USER
   popd
-  chown -R $VAGRANT_USER:$VAGRANT_USER $TERMINUS_PLUGIN_PATH
 fi
 
 # Authenicate with provide machine token and push server aliases to drush
@@ -42,6 +41,6 @@ if [[ "$1" == "" ]]; then
 	echo "Usage: terminus.sh <machine token> [<vagrant_user>]"
 	exit 1
 else
-  $TERMINUS_COMPOSER_COMMAND auth:login --machine-token=$1
-  $TERMINUS_COMPOSER_COMMAND aliases
+  sudo su -c "$TERMINUS_COMPOSER_COMMAND auth:login --machine-token=$1" $VAGRANT_USER
+  sudo su -c "$TERMINUS_COMPOSER_COMMAND aliases" $VAGRANT_USER
 fi

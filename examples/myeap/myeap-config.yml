@@ -60,21 +60,24 @@ drupal_install_site: false
 drupal_composer_project_dir: "/var/www/myeap"
 drupal_core_path: "{{ drupal_composer_project_dir }}/web"
 drupal_core_owner: "{{ drupalvm_user }}"
-drupal_db_user: myeap_dev
-drupal_db_password: myeap_dev
-drupal_db_name: myeap_dev
+drupal_db_admin: drupal_vm
+drupal_db_admin_password: drupal_vm
 
 # MySQL databases and users.
 mysql_databases:
-  - name: "{{ drupal_db_name }}"
+  - name: "myeap_dev"
     encoding: utf8mb4
     collation: utf8mb4_general_ci
 
 mysql_users:
-  - name: "{{ drupal_db_user }}"
+  - name: "{{ drupal_db_admin }}"
+    host: "localhost"
+    password: "{{ drupal_db_admin_password }}"
+    priv: "*.*:ALL"
+  - name: "myeap_dev"
     host: "%"
-    password: "{{ drupal_db_password }}"
-    priv: "{{ drupal_db_name }}.*:ALL"
+    password: "myeap_dev"
+    priv: "myeap_dev.*:ALL"
 
 # Comment out any extra utilities you don't want to install. If you don't want
 # to install *any* extras, set this value to an empty set, e.g. `[]`.
@@ -108,6 +111,7 @@ extra_packages:
   - graphicsmagick
   - graphicsmagick-imagemagick-compat
   - yamllint
+  - parallel
 
 # You can configure almost anything else on the server in the rest of this file.
 extra_security_enabled: false
@@ -148,22 +152,7 @@ php_short_open_tag: "Off"
 php_post_max_size: "100M"
 php_upload_max_filesize: "100M"
 php_assert_active: 0
-php_packages:
-  - "php{{ php_version }}"
-  - "php{{ php_version }}-apcu"
-  - "php{{ php_version }}-cli"
-  - "php{{ php_version }}-common"
-  - "php{{ php_version }}-curl"
-  - "php{{ php_version }}-dev"
-  - "php{{ php_version }}-fpm"
-  - "php{{ php_version }}-gd"
-  - "php{{ php_version }}-imap"
-  - "php{{ php_version }}-json"
-  - "php{{ php_version }}-mbstring"
-  - "php{{ php_version }}-mcrypt"
-  - "php{{ php_version }}-opcache"
-  - "php{{ php_version }}-sqlite3"
-  - "php{{ php_version }}-xml"
+
 
 # Drupal VM defaults to using PHP-FPM with either Apache or Nginx. If you wish
 # to instead use Apache + mod_php with an Ubuntu base box, make sure you add
@@ -187,7 +176,8 @@ post_provision_scripts:
   - "../examples/scripts/cachefilesd.sh"
   - "../examples/scripts/terminus.sh {{terminus_machine_token}} {{ drupalvm_user }}"
   - "../examples/scripts/behat_localhost_env.sh {{vagrant_hostname}} {{ drupalvm_user }}"
-  - "../examples/scripts/create_user_my_cnf.sh {{ drupal_db_user }} {{ drupal_db_password }} {{ drupalvm_user }}"
+  - "../examples/scripts/create_user_my_cnf.sh {{ drupal_db_admin }} {{ drupal_db_admin_password }} {{ drupalvm_user }}"
+  - "../examples/scripts/disable_pecl_yaml.sh {{ php_version }}"
 
 # MySQL Configuration.
 mysql_packages:
