@@ -34,6 +34,7 @@ if [ ! -e $TERMINUS_PLUGIN_PATH ]; then
   git clone https://github.com/pantheon-systems/terminus-composer-plugin.git
   git clone https://github.com/pantheon-systems/terminus-quicksilver-plugin.git
   popd
+  chown -R $VAGRANT_USER:$VAGRANT_USER $TERMINUS_PLUGIN_PATH
 fi
 
 # Authenicate with provide machine token and push server aliases to drush
