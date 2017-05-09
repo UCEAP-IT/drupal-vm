@@ -1,8 +1,8 @@
 ---
 # If you need to run multiple instances of Drupal VM, set a unique hostname,
 # machine name, and IP address for each instance.
-vagrant_hostname: reciprocity.dev
-vagrant_machine_name: reciprocity
+vagrant_hostname: drupalvm.dev
+vagrant_machine_name: drupalvm
 
 # A list of synced folders, with the keys 'local_path', 'destination', and
 # a 'type' of [nfs|rsync|smb] (leave empty for slow native shares). See
@@ -214,6 +214,7 @@ composer_home_group: "{{ drupalvm_user }}"
 composer_global_packages:
   - { name: hirak/prestissimo, release: '^0.3' }
   - { name: drupal/drupal-extension, release: '*' }
+  - { name: consolidation/cgr, release: '*' }
   - { name: pantheon-systems/terminus, release: '*' }
 
 # Run specified scripts before or after VM is provisioned. Path is relative to
@@ -222,7 +223,6 @@ pre_provision_scripts: []
 post_provision_scripts:
   - "../examples/scripts/cachefilesd.sh"
   - "../examples/scripts/terminus.sh {{terminus_machine_token}} {{ drupalvm_user }}"
-  - "../examples/scripts/behat_localhost_env.sh {{vagrant_hostname}} {{ drupalvm_user }}"
   - "../examples/scripts/create_user_my_cnf.sh {{ drupal_db_admin }} {{ drupal_db_admin_password }} {{ drupalvm_user }}"
   - "../examples/scripts/disable_pecl_yaml.sh {{ php_version }}"
 
