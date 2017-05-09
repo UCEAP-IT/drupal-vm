@@ -9,9 +9,6 @@
 
 # Setup variables to installs terminus and it's plugin.
 TERMINUS_COMMAND_NAME="terminus"
-TERMINUS_DOWNLOAD="https://raw.githubusercontent.com/pantheon-systems/terminus-installer/master/builds/installer.phar"
-TERMINUS_DOWNLOAD_DIR="/tmp/terminus"
-TERMINUS_VERSION="1.3.x"
 VAGRANT_USER="${2:-vagrant}"
 TERMINUS_COMPOSER_VENDOR_PATH="/home/$VAGRANT_USER/.composer/vendor"
 TERMINUS_COMPOSER_BIN_PATH="$TERMINUS_COMPOSER_VENDOR_PATH/bin"
@@ -22,18 +19,17 @@ if [ ! -e $TERMINUS_COMPOSER_COMMAND ]; then
   # Download and install terminus in composer global for current user.
   # add  '--install-version=$TERMINUS_VERSION' if you want to install a specific
   # terminus version.
-  sudo su -c "curl -O $TERMINUS_DOWNLOAD && php installer.phar install  --install-dir=$TERMINUS_DOWNLOAD_DIR --bin-dir=$TERMINUS_COMPOSER_BIN_PATH" $VAGRANT_USER
+  sudo su -c "cgr \"pantheon-systems/terminus:^1\"" $VAGRANT_USER
 fi
 
 # Install terminus helper plugins for workflow
 if [ ! -e $TERMINUS_PLUGIN_PATH ]; then
   sudo su -c "mkdir -p $TERMINUS_PLUGIN_PATH" $VAGRANT_USER
-  pushd $TERMINUS_PLUGIN_PATH
-  sudo su -c "git clone https://github.com/pantheon-systems/terminus-drupal-console-plugin.git" $VAGRANT_USER
-  sudo su -c "git clone https://github.com/pantheon-systems/terminus-build-tools-plugin.git" $VAGRANT_USER
-  sudo su -c "git clone https://github.com/pantheon-systems/terminus-composer-plugin.git" $VAGRANT_USER
-  sudo su -c "git clone https://github.com/pantheon-systems/terminus-quicksilver-plugin.git" $VAGRANT_USER
-  popd
+  sudo su -c "composer create-project -n -d $TERMINUS_PLUGIN_PATH pantheon-systems/terminus-drupal-console-plugin:^1" $VAGRANT_USER
+  sudo su -c "composer create-project -n -d $TERMINUS_PLUGIN_PATH pantheon-systems/terminus-build-tools-plugin:^1" $VAGRANT_USER
+  sudo su -c "composer create-project -n -d $TERMINUS_PLUGIN_PATH pantheon-systems/terminus-secrets-plugin:^1" $VAGRANT_USER
+  sudo su -c "composer create-project -n -d $TERMINUS_PLUGIN_PATH pantheon-systems/terminus-composer-plugin:^1" $VAGRANT_USER
+  sudo su -c "composer create-project -n -d $TERMINUS_PLUGIN_PATH pantheon-systems/terminus-quicksilver-plugin:^1" $VAGRANT_USER
 fi
 
 # Authenicate with provide machine token and push server aliases to drush
