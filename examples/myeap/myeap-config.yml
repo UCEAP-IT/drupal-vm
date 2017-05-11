@@ -1,4 +1,11 @@
 ---
+# `vagrant_box` can also be set to geerlingguy/centos6, geerlingguy/centos7,
+# geerlingguy/debian8, geerlingguy/ubuntu1404, geerlingguy/ubuntu1204, etc.
+vagrant_box: geerlingguy/ubuntu1604
+vagrant_user: vagrant
+vagrant_synced_folder_default_type: nfs
+vagrant_gui: false
+
 # If you need to run multiple instances of Drupal VM, set a unique hostname,
 # machine name, and IP address for each instance.
 vagrant_hostname: myeap.dev
@@ -17,9 +24,6 @@ vagrant_synced_folders:
     create: true
     # docksal settings
     mount_options: ["rw", "vers=3", "tcp", "nolock", "noacl", "nocto", "noatime", "nodiratime", "actimeo=1"]
-    #
-    # cachefilesd settings prime: 'fsc'
-    # mount_options: ['rw', 'vers=3', 'tcp', 'fsc']
 # Memory and CPU to use for this VM.
 vagrant_memory: 2048
 vagrant_cpus: 2
@@ -35,7 +39,7 @@ terminus_machine_token: '<pantheon machine token for your vm>'
 force_ansible_local: false
 
 # The web server software to use. Can be either 'apache' or 'nginx'.
-drupalvm_webserver: nginx
+drupalvm_webserver: apache
 
 # The database system to use. Can be either 'mysql' or 'pgsql'.
 drupal_db_backend: mysql
@@ -58,7 +62,7 @@ drupal_install_site: false
 
 # Required Drupal settings.
 drupal_composer_project_dir: "/var/www/myeap"
-drupal_core_path: "{{ drupal_composer_project_dir }}/web"
+drupal_core_path: "{{ drupal_composer_install_dir }}/web"
 drupal_core_owner: "{{ drupalvm_user }}"
 drupal_db_admin: drupal_vm
 drupal_db_admin_password: drupal_vm
@@ -105,7 +109,7 @@ installed_extras:
 
 # Add any extra apt or yum packages you would like installed.
 extra_packages:
-  - cachefilesd
+  # - cachefilesd
   - sqlite
   - unzip
   - graphicsmagick
@@ -167,13 +171,14 @@ composer_home_group: "{{ drupalvm_user }}"
 composer_global_packages:
   - { name: hirak/prestissimo, release: '^0.3' }
   - { name: drupal/drupal-extension, release: '*' }
+  - { name: consolidation/cgr, release: '*' }
   - { name: pantheon-systems/terminus, release: '*' }
 
 # Run specified scripts before or after VM is provisioned. Path is relative to
 # the `provisioning/playbook.yml` file.
 pre_provision_scripts: []
 post_provision_scripts:
-  - "../examples/scripts/cachefilesd.sh"
+  # - "../examples/scripts/cachefilesd.sh"
   - "../examples/scripts/terminus.sh {{terminus_machine_token}} {{ drupalvm_user }}"
   - "../examples/scripts/behat_localhost_env.sh {{vagrant_hostname}} {{ drupalvm_user }}"
   - "../examples/scripts/create_user_my_cnf.sh {{ drupal_db_admin }} {{ drupal_db_admin_password }} {{ drupalvm_user }}"
@@ -229,6 +234,11 @@ solr_xmx: "128M"
 
 # Selenium configuration.
 selenium_version: 2.53.0
+
+# Docker configuration.
+# docker_container_name: drupal-vm
+# docker_image_name: drupal-vm
+# docker_image_path: ~/Downloads
 
 # Other configuration.
 dashboard_install_dir: /var/www/dashboard
