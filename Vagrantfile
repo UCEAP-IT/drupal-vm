@@ -23,8 +23,8 @@ end
 vconfig = load_config([
   default_config_file,
   "#{host_config_dir}/config.yml",
-  "#{host_config_dir}/local.config.yml",
-  "#{host_config_dir}/#{drupalvm_env}.config.yml"
+  "#{host_config_dir}/#{drupalvm_env}.config.yml",
+  "#{host_config_dir}/local.config.yml"
 ])
 
 provisioner = vconfig['force_ansible_local'] ? :ansible_local : vagrant_provisioner
@@ -39,6 +39,8 @@ end
 # Verify version requirements.
 require_ansible_version ">= #{vconfig['drupalvm_ansible_version_min']}"
 Vagrant.require_version ">= #{vconfig['drupalvm_vagrant_version_min']}"
+
+ensure_plugins(vconfig['vagrant_plugins'])
 
 Vagrant.configure('2') do |config|
   # Set the name of the VM. See: http://stackoverflow.com/a/17864388/100134
@@ -75,6 +77,14 @@ Vagrant.configure('2') do |config|
     config.hostmanager.aliases = aliases
   end
 
+  # Sync the project root directory to /vagrant
+  unless vconfig['vagrant_synced_folders'].any? { |synced_folder| synced_folder['destination'] == '/vagrant' }
+    vconfig['vagrant_synced_folders'].push(
+      'local_path' => host_project_dir,
+      'destination' => '/vagrant'
+    )
+  end
+
   # Synced folders.
   vconfig['vagrant_synced_folders'].each do |synced_folder|
     options = {
@@ -83,7 +93,8 @@ Vagrant.configure('2') do |config|
       rsync__args: ['--verbose', '--archive', '--delete', '-z', '--copy-links', '--chmod=ugo=rwX'],
       id: synced_folder['id'],
       create: synced_folder.fetch('create', false),
-      mount_options: synced_folder.fetch('mount_options', [])
+      mount_options: synced_folder.fetch('mount_options', []),
+      nfs_udp: synced_folder.fetch('nfs_udp', false)
     }
     synced_folder.fetch('options_override', {}).each do |key, value|
       options[key.to_sym] = value
@@ -91,17 +102,16 @@ Vagrant.configure('2') do |config|
     config.vm.synced_folder synced_folder.fetch('local_path'), synced_folder.fetch('destination'), options
   end
 
-  # Allow override of the default synced folder type.
-  config.vm.synced_folder host_project_dir, '/vagrant', type: vconfig['vagrant_synced_folder_default_type']
-
   config.vm.provision provisioner do |ansible|
     ansible.playbook = playbook
     ansible.extra_vars = {
       config_dir: config_dir,
       drupalvm_env: drupalvm_env
     }
-    ansible.raw_arguments = ENV['DRUPALVM_ANSIBLE_ARGS']
+    ansible.raw_arguments = Shellwords.shellsplit(ENV['DRUPALVM_ANSIBLE_ARGS']) if ENV['DRUPALVM_ANSIBLE_ARGS']
     ansible.tags = ENV['DRUPALVM_ANSIBLE_TAGS']
+    # Use pip to get the latest Ansible version when using ansible_local.
+    provisioner == :ansible_local && ansible.install_mode = 'pip'
   end
 
   # VMware Fusion.
@@ -116,7 +126,7 @@ Vagrant.configure('2') do |config|
 
   # VirtualBox.
   config.vm.provider :virtualbox do |v|
-    v.linked_clone = true if Vagrant::VERSION =~ /^1.8/
+    v.linked_clone = true
     v.name = vconfig['vagrant_hostname']
     v.memory = vconfig['vagrant_memory']
     v.cpus = vconfig['vagrant_cpus']

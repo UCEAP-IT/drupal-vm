@@ -25,22 +25,21 @@
       include: "{{ outer_item }}"
       loop_control:
         loop_var: outer_item
-      with_fileglob:
-        - "{{ pre_provision_tasks_dir|default(omit) }}"
+      with_fileglob: "{{ pre_provision_tasks_dir|default(omit) }}"
 
     - include: tasks/php.yml
 
   roles:
     # Essential roles.
     - { role: geerlingguy.repo-remi, when: ansible_os_family == 'RedHat', tags: ['webserver', 'php'] }
-    - { role: drupalvm.hostname }
-    - { role: geerlingguy.firewall }
+    - { role: drupalvm.hostname, when: hostname_configure }
+    - { role: geerlingguy.firewall, when: firewall_enabled }
     - { role: geerlingguy.git }
     - { role: geerlingguy.postfix }
     - { role: geerlingguy.apache, when: drupalvm_webserver == 'apache', tags: ['webserver']}
     - { role: geerlingguy.apache-php-fpm, when: drupalvm_webserver == 'apache', tags: ['webserver'] }
     - { role: geerlingguy.nginx, when: drupalvm_webserver == 'nginx', tags: ['webserver'] }
-    - { role: drupalvm.php-versions, tags: ['php', 'xdebug', 'database'] }
+    - { role: geerlingguy.php-versions, when: php_version != '', tags: ['php', 'xdebug', 'database'] }
     - { role: geerlingguy.php, tags: ['php'] }
     - { role: geerlingguy.php-pecl, tags: ['php'] }
     - { role: geerlingguy.composer }
@@ -128,5 +127,4 @@
       include: "{{ outer_item }}"
       loop_control:
         loop_var: outer_item
-      with_fileglob:
-        - "{{ post_provision_tasks_dir|default(omit) }}"
+      with_fileglob: "{{ post_provision_tasks_dir|default(omit) }}"
