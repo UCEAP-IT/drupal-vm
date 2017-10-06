@@ -1,11 +1,11 @@
 If you have [Drush](http://www.drush.org) and Ansible installed on your host workstation, and would like to interact with a Drupal site running inside Drupal VM, there are drush aliases automatically created by Drupal VM for each of the virtual hosts you have configured.
 
-With the example configuration, you can manage the example Drupal site using the Drush alias `@drupalvm.dev`. For example, to check if Drush can connect to the site in Drupal VM, run:
+With the example configuration, you can manage the example Drupal site using the Drush alias `@drupalvm.test`. For example, to check if Drush can connect to the site in Drupal VM, run:
 
 ```
-$ drush @drupalvm.dev status
+$ drush @drupalvm.test status
  Drupal version         :  8.0.0-dev
- Site URI               :  drupalvm.dev
+ Site URI               :  drupalvm.test
  Database driver        :  mysql
  Database hostname      :  localhost
  Database port          :
@@ -35,6 +35,22 @@ $ drush @drupalvm.dev status
 
 Drupal VM automatically generates a drush alias file in `~/.drush/drupalvm.aliases.drushrc.php` with an alias for every site you have defined in the `apache_vhosts` variable.
 
+If you want to customize the generated alias file you can override the `drush_aliases_host_template` and `drush_aliases_guest_template` variables in your `config.yml`.
+
+```yaml
+drush_aliases_host_template: "{{ config_dir }}/templates/drupalvm.aliases.drushrc.php.j2"
+```
+
+Eg. to only print the alias for your main domain, and not the subdomain you can override the file using a [Jinja2 child template](http://jinja.pocoo.org/docs/2.9/templates/#child-template).
+
+```php
+{% extends 'templates/drupalvm.aliases.drushrc.php.j2' %}
+
+{% block aliases %}
+{{ alias('drupalvm.test', drupal_core_path) }}
+{% endblock %}
+```
+
 You can disable Drupal VM's automatic Drush alias file management if you want to manage drush aliases on your own. Just set the `configure_drush_aliases` variable in `config.yml` to `false`.
 
 ## Using sql-sync
@@ -46,7 +62,7 @@ If you're locked to an older version of Drush, it is likely that Drush will try 
 If you're still having issues, you can avoid `sql-sync` entirely and pipe the mysqldump output yourself with:
 
 ```
-drush @remote sql-dump | drush @drupalvm.drupalvm.dev sql-cli
+drush @remote sql-dump | drush @drupalvm.drupalvm.test sql-cli
 ```
 
 ## Running `drush core-cron` as a cron job.
