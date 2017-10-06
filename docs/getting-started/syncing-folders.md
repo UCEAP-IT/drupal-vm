@@ -14,7 +14,7 @@ You can add as many synced folders as you'd like, and you can configure [any typ
 
 ## Options
 
-The synced folder options exposed are `type`, `excluded_paths` (when using rsync), `id`, `create` and `mount_options`. Besides these there are some sane defaults set when using rsync. For example all files synced with rsync will be writable by everyone, thus allowing the web server to create files.
+The synced folder options exposed are `type`, `excluded_paths` (when using rsync), `id`, `create`, `mount_options` and `nfs_udp`. Besides these there are some sane defaults set when using rsync. For example all files synced with rsync will be writable by everyone, thus allowing the web server to create files.
 
 ### Overriding defaults
 
@@ -54,12 +54,6 @@ vagrant_synced_folders:
 ```
 
 See [this issue](https://github.com/geerlingguy/drupal-vm/issues/67) for more information.
-
-### VirtualBox Guest Additions out of date
-
-If you get errors when running `vagrant up` stating that your guest additions are out of date, you can fix this easily by installing the `vagrant-vbguest` plugin. Run the following command in the drupal-vm folder: `vagrant plugin install vagrant-vbguest`.
-
-Otherwise, you will need to make sure you're using the officially supported `geerlingguy/ubuntu1404` box, which should _generally_ have the latest (or near-latest) guest additions installed. If not, please open an issue in the upstream project for building the base box: [`packer-ubuntu-1404`](https://github.com/geerlingguy/packer-ubuntu-1404).
 
 ### Permissions-related errors
 
